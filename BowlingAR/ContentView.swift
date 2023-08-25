@@ -115,7 +115,6 @@ class PinSystem: System {
         for pin in pins {
             let pinUpVector = pin.transform.matrix.columns.1.xyz
             if dot(pinUpVector, upVector) > 0.01 {
-                print("no se cae aun")
                 return false // Game not over as a pin is still standing
             }
         }
