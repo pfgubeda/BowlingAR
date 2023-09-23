@@ -16,9 +16,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        // Se añade para que el método de update sea llamado automáticamente por reality kit
+
         BallPhysicsSystem.registerSystem()
-        // Se añade para que la funcion update sea llamada en cada frame
+
         PinSystem.registerSystem()
 
         // Create the SwiftUI view that provides the window contents.

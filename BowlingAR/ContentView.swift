@@ -66,6 +66,7 @@ struct ARViewContainer: UIViewRepresentable {
     func makeUIView(context: Context) -> ARGameView {
         
         if let bowling = try? Experience.loadBowling(){
+            
             setupComponents(in: bowling)
             arView.scene.anchors.append(bowling)
         }
@@ -76,7 +77,9 @@ struct ARViewContainer: UIViewRepresentable {
     func updateUIView(_ uiView: ARGameView, context: Context) {}
     
     private func setupComponents(in bowling: Experience.Bowling){
+        
         if let ball = bowling.ball {
+            
             ball.components[BallComponent.self] = BallComponent()
         }
         
@@ -99,23 +102,19 @@ class PinSystem: System {
     required init(scene: RealityKit.Scene) { }
     
     func update(context: SceneUpdateContext) {
-        // Get all the pins in the scene
         let pins = context.scene.performQuery(PinComponent.query)
-        // Check their upright orientation to determine if they'e been knocked over
         if checkGameOver(pins: pins) {
-            //if so, then post a game over notification
             NotificationCenter.default.post(name: PinSystem.gameOverNotification, object: nil)
         }
     }
     
     private func checkGameOver(pins: QueryResult<Entity>) -> Bool {
-        // comparar vectores (posi original vertical y vector actual del bolo) y dependendiendo del resultado se determina si se ha caido o no el bolo, el bolo se determina como "caido" si el resultado de la operacion dot es cercano a 0
         let upVector = SIMD3<Float>(0, 1, 0)
         
         for pin in pins {
             let pinUpVector = pin.transform.matrix.columns.1.xyz
             if dot(pinUpVector, upVector) > 0.01 {
-                return false // Game not over as a pin is still standing
+                return false
             }
         }
         
@@ -130,22 +129,22 @@ struct PinComponent: Component {
 class ARGameView: ARView {
     
     func startApplyingForce(direction: ForceDirection){
-        // Retrieve ball entity from the scene graph, utilizado sólo porque conocemos que solo existe un elemento
+        
         if let ball = scene.performQuery(BallComponent.query).first{
-            // Get its BallComponent, which holds the force direction
+
             var ballState = ball.components[BallComponent.self] as? BallComponent
-            // Set the force direction to the incoming direction
+
             ballState?.direction = direction
             ball.components[BallComponent.self] = ballState
         }
     }
     
     func stopApplyingForce(){
-        // Retrieve ball entity from the scene graph
+
         if let ball = scene.performQuery(BallComponent.query).first{
-            // Get its BallComponent, which holds the force direction
+
             var ballState = ball.components[BallComponent.self] as? BallComponent
-            // Set the force direction to nil
+
             ballState?.direction = nil
             ball.components[BallComponent.self] = ballState
         }
@@ -154,24 +153,27 @@ class ARGameView: ARView {
 
 class BallPhysicsSystem: System {
     
-    // Para controlar la velocidad de movimiento, se podría aplicar directamente en los vectores que definen la dirección, pero aquí luce mejor ya que se trata de un elemento de physics.
     let ballSpeed: Float = 0.01
     
     required init(scene: RealityKit.Scene) { }
     
     func update(context: SceneUpdateContext) {
+        
         if let ball = context.scene.performQuery(BallComponent.query).first {
+            
             move(ball: ball)
         }
     }
     
     private func move(ball: Entity){
+        
         guard let ballState = ball.components[BallComponent.self] as? BallComponent,
               let physicsBody = ball as? HasPhysicsBody else{
             return
         }
         
         if let forceDirection = ballState.direction?.vector {
+            
             let impulse = ballSpeed * forceDirection
             physicsBody.applyLinearImpulse(impulse, relativeTo: nil)
         }
